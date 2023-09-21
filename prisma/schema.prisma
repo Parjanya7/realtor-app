@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id                          Int           @id           @default(autoincrement())
+  name                        String
+  phone_number                String
+  email                       String        @unique
+  password                    String
+  user_type                   UserType
+  homes                       Homes[]
+  buyer_messages              Messages[]    @relation("buyer_messages")
+  realtor_messages            Messages[]    @relation("realtor_messages")
+  created_at                  DateTime      @default(now())
+  updated_at                  DateTime      @updatedAt
+}
+
+model Messages {
+  id                          Int           @id           @default(autoincrement())
+  message                     String
+  home_id                     Int
+  home                        Homes          @relation(fields: [home_id], references: [id])
+  realtor_id                  Int
+  realtor                     Users         @relation("realtor_messages", fields: [realtor_id], references: [id])
+  buyer_id                    Int
+  buyer                       Users         @relation("buyer_messages", fields: [buyer_id], references: [id])
+}
+
+model Homes {
+  id                          Int           @id           @default(autoincrement())
+  adress                      String
+  number_of_beds              Int
+  number_of_bathrooms         Float
+  city                        String
+  listed_date                 DateTime      @default(now())
+  price                       Float
+  land_size                   Float
+  property_type               PropertyType
+  images                      Images[]
+  realtor_id                  Int           
+  realtor                     Users         @relation(fields: [realtor_id], references: [id]) 
+  messages                    Messages[]
+  created_at                  DateTime      @default(now())
+  updated_at                  DateTime      @updatedAt
+}
+
+model Images {
+  id                          Int           @id           @default(autoincrement())
+  url                         String
+  home_id                     Int
+  home                        Homes         @relation(fields: [home_id], references: [id])
+  created_at                  DateTime      @default(now())
+  updated_at                  DateTime      @updatedAt
+}
+
+enum  PropertyType {
+  RESEDENTIAL
+  CONDO
+}
+
+enum UserType {
+  BUYER
+  REALTOR
+  ADMIN
+}
